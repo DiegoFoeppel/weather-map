@@ -16,7 +16,17 @@ type Coord = {
 };
 
 const form = document.querySelector<HTMLFormElement>(".form");
+const cityInput = document.querySelector(
+  ".search-input",
+) as HTMLInputElement | null;
+
 const weatherCard = document.querySelector<HTMLDivElement>(".weather-card");
+const latInput = document.querySelector(
+  ".lat-input",
+) as HTMLInputElement | null;
+const lngInput = document.querySelector(
+  ".lng-input",
+) as HTMLInputElement | null;
 
 var map = L.map("map", {
   zoom: 12,
@@ -30,15 +40,53 @@ L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
   maxZoom: 19,
 }).addTo(map);
 
+const onMapClick = async (e) => {
+  console.log("e", e.latlng);
+  const { lat, lng } = e.latlng;
+
+  if (lat == null || lng == null) return;
+  if (!latInput || !lngInput) return;
+
+  const newLat = lat.toFixed(4);
+  const newLng = lng.toFixed(4);
+
+  latInput.removeAttribute("disabled");
+  lngInput.removeAttribute("disabled");
+
+  latInput.value = String(newLat);
+  lngInput.value = String(newLng);
+};
+
+map.on("click", onMapClick);
+
 const moveMapView = (coord: Coord) => {
   map.setView([coord.lat, coord.lon], 12);
 };
 
-const loadWeatherInfo = async (cityName: string) => {
+type Weather = {
+  city?: string;
+  lat?: number;
+  lng?: number;
+};
+
+const baseWeatherUrl = "https://api.openweathermap.org/data/2.5/weather?";
+
+const loadWeatherInfo = async ({ city, lat, lng }: Weather) => {
+  console.log("ssa", city, lat, lng);
   try {
-    const response = await fetch(
-      `https://api.openweathermap.org/data/2.5/weather?q=${cityName}&appid=${apiKey}&units=metric`,
-    );
+    let fullUrl = `${baseWeatherUrl}q=${city}&appid=${apiKey}&units=metric`;
+    console.log("full", fullUrl);
+
+    if (!city && lat && lng) {
+      fullUrl = `${baseWeatherUrl}lat=${lat}&lon=${lng}&appid=${apiKey}&units=metric`;
+    }
+
+    console.log("full", fullUrl);
+
+    //funciona
+    // https://api.openweathermap.org/data/2.5/weather?lat=-3.7393&lon=-38.5245&appid=5726125e920eaaf1a591f6276c65db8b
+
+    const response = await fetch(fullUrl);
 
     const data = await response.json();
 
@@ -46,6 +94,7 @@ const loadWeatherInfo = async (cityName: string) => {
       throw new Error("City not found");
     }
 
+    console.log("data", data);
     showData(data);
   } catch (error) {
     showError(error instanceof Error ? error.message : "An error occurred");
@@ -80,6 +129,50 @@ const showData = (apiData: WeatherData) => {
   moveMapView(coord);
 };
 
+async function processData(event: Event) {
+  event.preventDefault();
+
+  if (!form) return;
+
+  let data = new FormData(form);
+
+  const cityName = data.get("city");
+  const latValue = data.get("lat");
+  const lngValue = data.get("lng");
+
+  const city = String(cityName);
+
+  const lat = latValue ? Number(latValue) : undefined;
+  const lng = lngValue ? Number(lngValue) : undefined;
+
+  if (lat && lng) {
+    await loadWeatherInfo({ lat, lng });
+    return;
+  }
+
+  if (city) {
+    await loadWeatherInfo({ city });
+  }
+
+  // await loadWeatherInfo({ cityName });
+  // if (!cityName || typeof cityName !== "string") return;
+  // // if (!lat || !lng) return;
+
+  // //dados do tempo
+  // // await loadWeatherInfo({ cityName, lat, lng });
+  // await loadWeatherInfo({ cityName, lat, lng });
+
+  form.reset();
+}
+
+form?.addEventListener("submit", async (event) => {
+  event.preventDefault();
+
+  // validateFields();
+
+  await processData(event);
+});
+
 function showError(message: string) {
   if (weatherCard) {
     weatherCard.innerHTML = `
@@ -88,28 +181,13 @@ function showError(message: string) {
   }
 }
 
-async function processData(event: Event) {
-  event.preventDefault();
+function validateFields() {
+  if (!latInput || !lngInput) return;
+  const hasCoords = latInput.value && lngInput.value;
 
-  if (!form) return;
-
-  if (form) {
-    let data = new FormData(form);
-
-    const cityName = data.get("city");
-
-    if (!cityName || typeof cityName !== "string") return;
-
-    console.log("cityName", cityName);
-
-    //dados do tempo
-    await loadWeatherInfo(cityName);
-
-    form.reset();
+  if (hasCoords) {
+    cityInput?.setAttribute("required", "false");
+  } else {
+    cityInput?.setAttribute("required", "true");
   }
 }
-
-form?.addEventListener("submit", async (event) => {
-  event.preventDefault();
-  await processData(event);
-});
