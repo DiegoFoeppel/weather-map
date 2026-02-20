@@ -9,7 +9,7 @@
 /* grey color #343a40 */
 
 body {
-  background-color: #f8f9fc;
+  background-color: #000;
   height: 100vh;
   display: flex;
 }
@@ -67,23 +67,38 @@ p {
 }
 
 .form {
+  margin-top: 50px;
   width: 400px;
   display: flex;
   justify-content: space-evenly;
+  flex-direction: column;
 }
 
-.search-input {
+.input {
+  width: 100%;
+  padding: 8px;
+  border-radius: 4px;
+  border: none;
+  margin-bottom: 15px;
+}
+
+/* .search-input {
   width: 70%;
-}
+} */
 
-.search-input,
 .search-btn {
   padding: 8px;
   border-radius: 4px;
   border: none;
+  margin: 10px 0px;
 }
 
 .search-btn:hover {
   cursor: pointer;
   opacity: 0.8;
+}
+
+label {
+  color: #f8f9fc;
+  margin-bottom: 8px;
 }
