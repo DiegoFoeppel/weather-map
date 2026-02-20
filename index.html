@@ -21,19 +21,42 @@
     <div class="main">
       <form class="form">
         <!-- <label for="city">Cidade</label> -->
+
+        <label for="city">Cidade</label>
         <input
-          class="search-input"
+          class="input search-input"
           type="text"
           id="city"
           name="city"
           placeholder="Pesquisar Cidade"
-          required
         />
 
-        <button type="submit-btn" class="search-btn">Pesquisar</button>
+        <label for="lat">Latitude</label>
+
+        <input
+          class="input lat-input"
+          type="text"
+          id="lat"
+          name="lat"
+          placeholder="Lat"
+          disabled
+        />
+
+        <label for="lng">Longitude</label>
+        <input
+          class="input lng-input"
+          type="text"
+          id="lng"
+          name="lng"
+          placeholder="Lng"
+          disabled
+        />
+
+        <button type="submit" class="search-btn">Pesquisar</button>
       </form>
 
       <div class="weather-card"></div>
+      <button onclick="alert('teste')">TEste</button>
     </div>
     <div class="map" id="map"></div>
     <script type="module" src="/src/main.ts"></script>
