@@ -19,18 +19,31 @@
   </head>
   <body>
     <div class="main">
-      <form class="form">
-        <!-- <label for="city">Cidade</label> -->
+      <select
+        name="search-option"
+        id="search-option"
+        class="select search-option"
+      >
+        <option value="">Choose an option</option>
+        <option value="city">City</option>
+        <option value="latlng">Lat/Lng</option>
+      </select>
 
-        <label for="city">Cidade</label>
+      <form class="city-form" hidden>
+        <label for="city">City</label>
         <input
           class="input search-input"
           type="text"
           id="city"
           name="city"
-          placeholder="Pesquisar Cidade"
+          required
+          placeholder="Search city"
         />
 
+        <button type="submit" class="search-btn">Search</button>
+      </form>
+
+      <form class="location-form" hidden>
         <label for="lat">Latitude</label>
 
         <input
@@ -39,7 +52,6 @@
           id="lat"
           name="lat"
           placeholder="Lat"
-          disabled
         />
 
         <label for="lng">Longitude</label>
@@ -49,15 +61,19 @@
           id="lng"
           name="lng"
           placeholder="Lng"
-          disabled
         />
 
-        <button type="submit" class="search-btn">Pesquisar</button>
+        <button type="submit" class="search-btn">Search</button>
       </form>
 
       <div class="weather-card"></div>
-      <button onclick="alert('teste')">TEste</button>
+
+      <div class="history-search">
+        <h3>Search history</h3>
+        <ul class="cities"></ul>
+      </div>
     </div>
+
     <div class="map" id="map"></div>
     <script type="module" src="/src/main.ts"></script>
   </body>

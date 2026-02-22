@@ -1,21 +1,14 @@
 import "./style.css";
 import * as L from "leaflet";
 import { apiKey } from "./api";
+import { type WeatherData, type Coord } from "./types";
 
-type WeatherData = {
-  coord: Coord;
-  weather: [{ description: string; icon: string; main: string }];
-  sys: { country: string };
-  main: { temp: number };
-  name: string;
-};
+const cityForm = document.querySelector(".city-form") as HTMLFormElement;
+const coordsForm = document.querySelector(".location-form") as HTMLFormElement;
+const selectedOption =
+  document.querySelector<HTMLSelectElement>(".search-option");
+const citiesList = document.querySelector(".cities") as HTMLUListElement;
 
-type Coord = {
-  lat: number;
-  lon: number;
-};
-
-const form = document.querySelector<HTMLFormElement>(".form");
 const cityInput = document.querySelector(
   ".search-input",
 ) as HTMLInputElement | null;
@@ -40,7 +33,7 @@ L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
   maxZoom: 19,
 }).addTo(map);
 
-const onMapClick = async (e) => {
+const onMapClick = async (e: { latlng: { lat: any; lng: any } }) => {
   console.log("e", e.latlng);
   const { lat, lng } = e.latlng;
 
@@ -50,8 +43,8 @@ const onMapClick = async (e) => {
   const newLat = lat.toFixed(4);
   const newLng = lng.toFixed(4);
 
-  latInput.removeAttribute("disabled");
-  lngInput.removeAttribute("disabled");
+  // latInput.removeAttribute("disabled");
+  // lngInput.removeAttribute("disabled");
 
   latInput.value = String(newLat);
   lngInput.value = String(newLng);
@@ -68,6 +61,47 @@ type Weather = {
   lat?: number;
   lng?: number;
 };
+
+function getLocalStorageData() {
+  const items = localStorage.getItem("history");
+
+  if (!items) return [];
+
+  return JSON.parse(items);
+}
+
+function saveToLocalStorage(city: string) {
+  const items = getLocalStorageData();
+
+  console.log("item", items, city);
+
+  const newItem = [...items, city];
+
+  localStorage.setItem("history", JSON.stringify(newItem));
+
+  loadCities();
+}
+
+function loadCities() {
+  const cities = getLocalStorageData();
+  console.log("cities", cities);
+
+  if (!cities) {
+    localStorage.setItem("history", JSON.stringify([]));
+    return;
+  }
+
+  for (const city of cities) {
+    console.log("city", city);
+    const item = document.createElement("li");
+
+    item.innerText = city;
+
+    citiesList.appendChild(item);
+  }
+}
+
+loadCities();
 
 const baseWeatherUrl = "https://api.openweathermap.org/data/2.5/weather?";
 
@@ -93,6 +127,8 @@ const loadWeatherInfo = async ({ city, lat, lng }: Weather) => {
     if (!response.ok) {
       throw new Error("City not found");
     }
+
+    saveToLocalStorage(data.name);
 
     console.log("data", data);
     showData(data);
@@ -120,7 +156,7 @@ const showData = (apiData: WeatherData) => {
     <div class="info">
       <h2>${name} - ${country}</h2>
       <p>${description}</p>
-      <p>${temperature}</p>
+      <p>${temperature}°C</p>
       <p>${weatherInfo.main}</p>
     </div>
     `;
@@ -129,65 +165,84 @@ const showData = (apiData: WeatherData) => {
   moveMapView(coord);
 };
 
-async function processData(event: Event) {
+async function processCityData(event: Event) {
   event.preventDefault();
 
-  if (!form) return;
+  if (!cityForm) return;
 
-  let data = new FormData(form);
+  let data = new FormData(cityForm);
 
-  const cityName = data.get("city");
+  const city = String(data.get("city"));
+
+  if (!city) return;
+
+  await loadWeatherInfo({ city });
+
+  cityForm.reset();
+}
+
+async function processCoordsData(event: Event) {
+  event.preventDefault();
+
+  if (!coordsForm) return;
+
+  let data = new FormData(coordsForm);
+
   const latValue = data.get("lat");
   const lngValue = data.get("lng");
 
-  const city = String(cityName);
+  console.log("teste", latValue, lngValue);
 
   const lat = latValue ? Number(latValue) : undefined;
   const lng = lngValue ? Number(lngValue) : undefined;
+
+  console.log("teste", lat, lng);
 
   if (lat && lng) {
     await loadWeatherInfo({ lat, lng });
     return;
   }
 
-  if (city) {
-    await loadWeatherInfo({ city });
-  }
-
-  // await loadWeatherInfo({ cityName });
-  // if (!cityName || typeof cityName !== "string") return;
-  // // if (!lat || !lng) return;
-
-  // //dados do tempo
-  // // await loadWeatherInfo({ cityName, lat, lng });
-  // await loadWeatherInfo({ cityName, lat, lng });
-
-  form.reset();
+  coordsForm.reset();
 }
 
-form?.addEventListener("submit", async (event) => {
+cityForm?.addEventListener("submit", async (event) => {
   event.preventDefault();
 
-  // validateFields();
-
-  await processData(event);
+  await processCityData(event);
 });
+
+coordsForm?.addEventListener("submit", async (event) => {
+  event.preventDefault();
+
+  console.log("uou");
+
+  await processCoordsData(event);
+});
+
+function showForm() {
+  const mode = selectedOption?.value;
+
+  console.log("option", mode);
+
+  if (mode === "city") {
+    cityForm.hidden = false;
+    coordsForm.hidden = true;
+  } else if (mode === "latlng") {
+    cityForm.hidden = true;
+    coordsForm.hidden = false;
+  } else {
+    cityForm.hidden = true;
+    coordsForm.hidden = true;
+  }
+}
+
+selectedOption?.addEventListener("change", showForm);
 
 function showError(message: string) {
   if (weatherCard) {
     weatherCard.innerHTML = `
     <p class="error">${message}
     </p>`;
-  }
-}
-
-function validateFields() {
-  if (!latInput || !lngInput) return;
-  const hasCoords = latInput.value && lngInput.value;
-
-  if (hasCoords) {
-    cityInput?.setAttribute("required", "false");
-  } else {
-    cityInput?.setAttribute("required", "true");
   }
 }
