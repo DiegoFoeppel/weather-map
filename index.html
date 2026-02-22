@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/weather-map/vite.svg" />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""
+    ></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>weather-map</title>
+    <script type="module" crossorigin src="/weather-map/assets/index-7HHX6_ga.js"></script>
+    <link rel="stylesheet" crossorigin href="/weather-map/assets/index-Kynn2aAr.css">
+  </head>
+  <body>
+    <div class="main">
+      <select
+        name="search-option"
+        id="search-option"
+        class="select search-option"
+      >
+        <option value="">Choose an option</option>
+        <option value="city">City</option>
+        <option value="latlng">Lat/Lng</option>
+      </select>
+
+      <form class="city-form" hidden>
+        <label for="city">City</label>
+        <input
+          class="input search-input"
+          type="text"
+          id="city"
+          name="city"
+          required
+          placeholder="Search city"
+        />
+
+        <button type="submit" class="search-btn">Search</button>
+      </form>
+
+      <form class="location-form" hidden>
+        <label for="lat">Latitude</label>
+
+        <input
+          class="input lat-input"
+          type="text"
+          id="lat"
+          name="lat"
+          placeholder="Lat"
+        />
+
+        <label for="lng">Longitude</label>
+        <input
+          class="input lng-input"
+          type="text"
+          id="lng"
+          name="lng"
+          placeholder="Lng"
+        />
+
+        <button type="submit" class="search-btn">Search</button>
+      </form>
+
+      <div class="weather-card"></div>
+
+      <div class="history-search">
+        <h3>Search history</h3>
+        <ul class="cities"></ul>
+      </div>
+    </div>
+
+    <div class="map" id="map"></div>
+  </body>
+</html>
